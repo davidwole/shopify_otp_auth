@@ -4,11 +4,13 @@ const axios = require('axios');
 const twilio = require('twilio');
 const crypto = require('crypto');
 const dotenv = require('dotenv').config();
+const cors = require('cors');
 
 // const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 app.use(express.json());
 app.use(express.urlencoded());
+app.use(cors());
 
 let otpStorage = {};  
 
