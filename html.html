@@ -1,0 +1,31 @@
+<form id="phoneLoginForm"><input type="text" id="phoneNumber" placeholder="Enter your phone number" required=""> <button type="submit">Login</button></form><script>
+  document.getElementById('phoneLoginForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const phoneNumber = document.getElementById('phoneNumber').value;
+
+    try {
+      const response = await fetch('https://shopify-otp-auth.onrender.com/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber }),
+      });
+
+      const data = await response.json();
+
+      if (data && data.accessToken) {
+        // Store the access token in a cookie or local storage
+        document.cookie = `shopifyAccessToken=${data.accessToken}; path=/; max-age=3600; secure`; // Stores token in a cookie for 1 hour
+        // Redirect the user to their account page
+        window.location.href = '/account';
+      } else {
+        alert('Login failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred. Please try again.');
+    }
+  });
+</script>

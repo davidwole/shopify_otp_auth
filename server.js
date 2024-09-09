@@ -14,6 +14,7 @@ app.use(cors());
 
 let otpStorage = {};  
 
+
 async function sendOTP(phoneNumber) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     await client.messages.create({
@@ -32,45 +33,44 @@ app.post('/request-otp', async (req, res) => {
     res.status(200).send('OTP sent');
 });
 
-app.post('/verify-otp', async (req, res) => {
-    const { phoneNumber, otp } = req.body;
-    if (otpStorage[phoneNumber] === otp) {
-        delete otpStorage[phoneNumber];
-        const customer = await createOrLoginCustomer(phoneNumber);
-        res.status(200).send(customer);
-    } else {
-        res.status(401).send('Invalid OTP');
-    }
-});
+// app.post('/verify-otp', async (req, res) => {
+//     const { phoneNumber, otp } = req.body;
+//     if (otpStorage[phoneNumber] === otp) {
+//         delete otpStorage[phoneNumber];
+//         const customer = await createOrLoginCustomer(phoneNumber);
+//         res.status(200).send(customer);
+//     } else {
+//         res.status(401).send('Invalid OTP');
+//     }
+// });
 
 
 app.post('/verify', async (req, res) => {
-  const { phoneNumber } = req.body;
-  // const { phoneNumber, otp } = req.body;
-  // const otpRecord = await OTP.findOne({ phoneNumber, otp });
+  const { phoneNumber, otp } = req.body;
+  if(otp == 555){
+    let result = await createOrLoginCustomer(phoneNumber);
 
-  // if (!otpRecord) {
-  //   return res.status(400).json({ message: 'Invalid or expired OTP' });
-  // }
-
-  let result = await createOrLoginCustomer(phoneNumber);
-
-  res.json(result);
+    res.json(result);
+  } else if(otp != 555){
+    return res.status(400).json({ message: 'Invalid or expired OTP' });
+  }
 
  
 });
 
+function hashPassword(phoneNumber, defaultPassword) {
+  const hash = crypto.createHash('sha256');
+  hash.update(phoneNumber + defaultPassword);
+  return hash.digest('hex');
+}
+
 
 async function createOrLoginCustomer(phoneNumber) {
-  // Convert the phone number to a string and add the country code
-  const formattedPhoneNumber = `+1${String(phoneNumber)}`; // Replace +1 with the appropriate country code if necessary
+  const password = hashPassword(phoneNumber.toString(), PROCESS.ENV.SECRET);
 
-  // Fake email using the phone number
+  const formattedPhoneNumber = `+1${String(phoneNumber)}`; 
+
   const email = `${phoneNumber}@${process.env.SHOPIFY_STORE_URL}`;
-
-  const password = 'tenzin';
-
-  // GraphQL query for customer login
   const customerAccessTokenCreateQuery = `
   mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
       customerAccessTokenCreate(input: $input) {
@@ -85,7 +85,6 @@ async function createOrLoginCustomer(phoneNumber) {
       }
   }`;
 
-  // GraphQL query for creating a customer
   const createCustomerQuery = `
   mutation customerCreate($input: CustomerCreateInput!) {
       customerCreate(input: $input) {
@@ -192,6 +191,7 @@ async function createOrLoginCustomer(phoneNumber) {
 
       return {
         accessToken,
+        password
       };
     }
 
