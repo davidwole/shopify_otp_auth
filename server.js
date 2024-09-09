@@ -26,10 +26,13 @@ async function sendOTP(phoneNumber) {
 
 
 app.post('/request-otp', async (req, res) => {
-    const { phoneNumber } = req.body;
-    const otp = await sendOTP(phoneNumber);
-    otpStorage[phoneNumber] = otp;
-    res.status(200).send('OTP sent');
+  res.status(200).json({
+    message: true
+  });
+    // const { phoneNumber } = req.body;
+    // const otp = await sendOTP(phoneNumber);
+    // otpStorage[phoneNumber] = otp;
+    // res.status(200).send('OTP sent');
 });
 
 app.post('/verify-otp', async (req, res) => {
