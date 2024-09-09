@@ -6,4 +6,4 @@ function hashPassword(phoneNumber, defaultPassword) {
   return hash.digest('hex');
 }
 
-console.log(hashPassword('555', '555'));
+console.log(hashPassword('555', '555').slice(0, 40));

@@ -12,17 +12,17 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(cors());
 
-let otpStorage = {};  
+// let otpStorage = {};  
 
-async function sendOTP(phoneNumber) {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    await client.messages.create({
-        body: `Your verification code is ${otp}`,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to: phoneNumber,  
-    });
-    return otp;
-}
+// async function sendOTP(phoneNumber) {
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//     await client.messages.create({
+//         body: `Your verification code is ${otp}`,
+//         from: process.env.TWILIO_PHONE_NUMBER,
+//         to: phoneNumber,  
+//     });
+//     return otp;
+// }
 
 
 app.post('/request-otp', async (req, res) => {
@@ -63,6 +63,9 @@ app.post('/verify', async (req, res) => {
  
 });
 
+function generateHash(phoneNumber, password) {
+  return crypto.createHash('sha256').update(phoneNumber + password).digest('hex');
+}
 
 async function createOrLoginCustomer(phoneNumber) {
   // Convert the phone number to a string and add the country code
@@ -72,6 +75,8 @@ async function createOrLoginCustomer(phoneNumber) {
   const email = `${phoneNumber}@${process.env.SHOPIFY_STORE_URL}`;
 
   const password = 'tenzin';
+  const hashedPassword = generateHash(phoneNumber, password).slice(0, 40); // Hash the password
+
 
   // GraphQL query for customer login
   const customerAccessTokenCreateQuery = `
@@ -111,7 +116,7 @@ async function createOrLoginCustomer(phoneNumber) {
         variables: {
           input: {
             email: email,
-            password: password,
+            password: hashedPassword,
           },
         },
       },
@@ -145,7 +150,7 @@ async function createOrLoginCustomer(phoneNumber) {
             input: {
               email: email,
               phone: formattedPhoneNumber,  // Use the formatted phone number
-              password: password,
+              password: hashedPassword,
             },
           },
         },
@@ -172,7 +177,7 @@ async function createOrLoginCustomer(phoneNumber) {
           variables: {
             input: {
               email: email,
-              password: password,
+              password: hashedPassword,
             },
           },
         },
@@ -195,6 +200,7 @@ async function createOrLoginCustomer(phoneNumber) {
 
       return {
         accessToken,
+        hashedPassword
       };
     }
 
@@ -202,6 +208,7 @@ async function createOrLoginCustomer(phoneNumber) {
 
     return {
       accessToken,
+      hashedPassword
     };
   } catch (error) {
     console.error("Error in createOrLoginCustomer:", error.response ? error.response.data : error.message);
