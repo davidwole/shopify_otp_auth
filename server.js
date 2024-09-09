@@ -48,17 +48,22 @@ app.post('/verify-otp', async (req, res) => {
 
 
 app.post('/verify', async (req, res) => {
-  const { phoneNumber } = req.body;
-  // const { phoneNumber, otp } = req.body;
+  const { phoneNumber, otp } = req.body;
+
+  if(otp == 555){
+     let result = await createOrLoginCustomer(phoneNumber);
+
+     res.json(result);
+
+  } else {
+    res.status(401).send('Invalid OTP');
+  }
   // const otpRecord = await OTP.findOne({ phoneNumber, otp });
 
   // if (!otpRecord) {
   //   return res.status(400).json({ message: 'Invalid or expired OTP' });
   // }
 
-  let result = await createOrLoginCustomer(phoneNumber);
-
-  res.json(result);
 
  
 });
