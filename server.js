@@ -33,16 +33,6 @@ app.post('/request-otp', async (req, res) => {
     res.status(200).send('OTP sent');
 });
 
-// app.post('/verify-otp', async (req, res) => {
-//     const { phoneNumber, otp } = req.body;
-//     if (otpStorage[phoneNumber] === otp) {
-//         delete otpStorage[phoneNumber];
-//         const customer = await createOrLoginCustomer(phoneNumber);
-//         res.status(200).send(customer);
-//     } else {
-//         res.status(401).send('Invalid OTP');
-//     }
-// });
 
 
 app.post('/verify', async (req, res) => {
@@ -66,7 +56,7 @@ function hashPassword(phoneNumber, defaultPassword) {
 
 
 async function createOrLoginCustomer(phoneNumber) {
-  const password = hashPassword(phoneNumber.toString(), PROCESS.ENV.SECRET);
+  const password = hashPassword(phoneNumber.toString(), process.env.SECRET);
 
   const formattedPhoneNumber = `+1${String(phoneNumber)}`; 
 
